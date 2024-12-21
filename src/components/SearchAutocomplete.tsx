@@ -120,6 +120,7 @@ export function SearchAutocomplete({ initialQuery }: Props) {
         }
         role="combobox"
         autoComplete="off"
+        spellCheck="false"
       />
 
       {showSuggestions && suggestions.length > 0 && (
