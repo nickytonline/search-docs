@@ -10,7 +10,7 @@ export interface SearchResult {
 export async function vectorSearch(query: string, limit: number = 5): Promise<SearchResult[]> {
   try {
     const searchTerms = query.toLowerCase().split(/\s+/).filter(Boolean);
-    const likePatterns = searchTerms.map(term => `%${term}%`);
+    const term = searchTerms[0]; // Using first term for simplicity
 
     const results = await db.execute({
       sql: `
@@ -19,23 +19,40 @@ export async function vectorSearch(query: string, limit: number = 5): Promise<Se
           title,
           substr(content, 1, 200) as content,
           (
-            /* Simple ranking based on matches in title and content */
             CASE
-              WHEN title LIKE ? THEN 2
-              WHEN content LIKE ? THEN 1
+              WHEN title LIKE '% ' || ? || ' %'
+                OR title LIKE '(' || ? || ')'
+                OR title LIKE ? || ' %'
+                OR title LIKE '% ' || ?
+                OR title = ? THEN 2
+              WHEN content LIKE '% ' || ? || ' %'
+                OR content LIKE '(' || ? || ')'
+                OR content LIKE ? || ' %'
+                OR content LIKE '% ' || ?
+                OR content = ? THEN 1
               ELSE 0
             END
           ) as relevance
         FROM pages
-        WHERE title LIKE ? OR content LIKE ?
+        WHERE
+          title LIKE '% ' || ? || ' %'
+          OR title LIKE '(' || ? || ')'
+          OR title LIKE ? || ' %'
+          OR title LIKE '% ' || ?
+          OR title = ?
+          OR content LIKE '% ' || ? || ' %'
+          OR content LIKE '(' || ? || ')'
+          OR content LIKE ? || ' %'
+          OR content LIKE '% ' || ?
+          OR content = ?
         ORDER BY relevance DESC
         LIMIT ?
       `,
       args: [
-        likePatterns[0], // for title match
-        likePatterns[0], // for content match
-        likePatterns[0], // for WHERE clause title
-        likePatterns[0], // for WHERE clause content
+        term, term, term, term, term, // for title relevance
+        term, term, term, term, term, // for content relevance
+        term, term, term, term, term, // for title WHERE clause
+        term, term, term, term, term, // for content WHERE clause
         limit
       ]
     });
@@ -44,7 +61,7 @@ export async function vectorSearch(query: string, limit: number = 5): Promise<Se
       url: row.url as string,
       title: row.title as string,
       content: row.content as string,
-      similarity: (row.relevance as number) / 2 // Normalize to 0-1 range
+      similarity: (row.relevance as number) / 2
     }));
 
   } catch (error) {
