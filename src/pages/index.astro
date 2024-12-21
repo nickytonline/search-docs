@@ -4,6 +4,12 @@ import SearchForm from "../components/SearchForm.astro";
 import SearchResults from "../components/SearchResults.astro";
 import { vectorSearch, type SearchResult } from "../lib/vector-search";
 
+Astro.response.headers.set(
+  "Netlify-CDN-Cache-Control",
+  "public, durable, max-age=3660, stale-while-revalidate=60"
+);
+Astro.response.headers.set("Netlify-Vary", "q");
+
 // Get search query from URL
 const query = Astro.url.searchParams.get("q") || "";
 
