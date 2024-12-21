@@ -1,0 +1,70 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { getSearchMetrics } from "../lib/analytics";
+
+// Basic auth check (you should implement proper auth)
+const auth = Astro.request.headers.get("Authorization");
+if (
+  auth !==
+  `Basic ${Buffer.from(process.env.ADMIN_CREDENTIALS || "").toString("base64")}`
+) {
+  return new Response("Unauthorized", {
+    status: 401,
+    headers: {
+      "WWW-Authenticate": 'Basic realm="Admin Analytics"',
+    },
+  });
+}
+
+const metrics = await getSearchMetrics(7);
+const {
+  total_searches,
+  avg_duration,
+  avg_results,
+  failed_searches,
+  zero_results,
+} = metrics.rows[0];
+---
+
+<Layout title="Search Analytics">
+  <main class="container mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold mb-8">Search Analytics</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+        <h2 class="text-lg font-semibold mb-2">Total Searches</h2>
+        <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">
+          {total_searches}
+        </p>
+      </div>
+
+      <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+        <h2 class="text-lg font-semibold mb-2">Average Duration</h2>
+        <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">
+          {Math.round(avg_duration)}ms
+        </p>
+      </div>
+
+      <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+        <h2 class="text-lg font-semibold mb-2">Average Results</h2>
+        <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">
+          {Math.round(avg_results)}
+        </p>
+      </div>
+
+      <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+        <h2 class="text-lg font-semibold mb-2">Failed Searches</h2>
+        <p class="text-3xl font-bold text-red-600 dark:text-red-400">
+          {failed_searches}
+        </p>
+      </div>
+
+      <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+        <h2 class="text-lg font-semibold mb-2">Zero Results</h2>
+        <p class="text-3xl font-bold text-yellow-600 dark:text-yellow-400">
+          {zero_results}
+        </p>
+      </div>
+    </div>
+  </main>
+</Layout>

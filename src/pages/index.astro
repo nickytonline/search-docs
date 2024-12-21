@@ -1,0 +1,27 @@
+---
+import Layout from "../layouts/Layout.astro";
+import SearchForm from "../components/SearchForm.astro";
+import SearchResults from "../components/SearchResults.astro";
+import { vectorSearch, type SearchResult } from "../lib/vector-search";
+
+// Get search query from URL
+const query = Astro.url.searchParams.get("q") || "";
+
+// Perform search if query exists
+let results: SearchResult[] = [];
+if (query) {
+  try {
+    results = await vectorSearch(query);
+  } catch (error) {
+    console.error("Search failed:", error);
+  }
+}
+---
+
+<Layout title="Documentation Search">
+  <main class="container mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold mb-8">Documentation Search</h1>
+    <SearchForm initialQuery={query} />
+    <SearchResults results={results} query={query} />
+  </main>
+</Layout>

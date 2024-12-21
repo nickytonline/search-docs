@@ -1,0 +1,52 @@
+---
+import { SearchAutocomplete } from "./SearchAutocomplete";
+
+interface Props {
+  initialQuery: string;
+}
+
+const { initialQuery } = Astro.props;
+---
+
+<form method="GET" class="mb-8" id="search-form">
+  <div class="flex gap-2">
+    <div class="relative flex-1">
+      <SearchAutocomplete client:load initialQuery={initialQuery} />
+      <div
+        id="loading-indicator"
+        class="hidden absolute right-3 top-1/2 -translate-y-1/2"
+      >
+        <div
+          class="animate-spin h-5 w-5 border-2 border-gray-500 border-t-transparent rounded-full"
+        >
+        </div>
+      </div>
+    </div>
+    <button
+      type="submit"
+      class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+      id="search-button"
+    >
+      Search
+    </button>
+  </div>
+</form>
+
+<script>
+  const form = document.getElementById("search-form") as HTMLFormElement;
+  const loadingIndicator = document.getElementById("loading-indicator");
+  const searchButton = document.getElementById("search-button");
+
+  if (form && loadingIndicator && searchButton) {
+    form.addEventListener("submit", () => {
+      loadingIndicator.classList.remove("hidden");
+      searchButton.setAttribute("disabled", "true");
+
+      // Reset state if taking too long
+      setTimeout(() => {
+        loadingIndicator.classList.add("hidden");
+        searchButton.removeAttribute("disabled");
+      }, 10000); // 10 second timeout
+    });
+  }
+</script>

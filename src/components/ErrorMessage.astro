@@ -1,0 +1,15 @@
+---
+interface Props {
+  title?: string;
+  message: string;
+}
+
+const { title = "Error", message } = Astro.props;
+---
+
+<div
+  class="p-4 border border-red-200 bg-red-50 dark:bg-red-900/10 dark:border-red-800 rounded-lg mb-4"
+>
+  <h2 class="text-red-800 dark:text-red-200 font-semibold mb-2">{title}</h2>
+  <p class="text-red-600 dark:text-red-300">{message}</p>
+</div>
